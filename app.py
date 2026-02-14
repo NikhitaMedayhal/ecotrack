@@ -16,15 +16,16 @@ def load_data():
 placeholder = st.empty() #for updation of carbon values
 
 while True:
-    df = load_data()
+    #creating an infinite loop
+    df = load_data()  #reading the csv made by logger.py
     
-    with placeholder.container():
+    with placeholder.container():   #value given by this loop is given to placeholder    #keeps replacing the old value in placeholder with new value
         if not df.empty:
             latest = df.iloc[-1] 
             st.metric("Latest CO₂ Emission (g)", round(latest["co2_kg"] * 1000, 3))
             st.metric("Data Used (GB)", round(latest["data_gb"], 5))
             st.metric("Energy Used (kWh)", round(latest["energy_kwh"], 5))
-            st.line_chart(df["co2_kg"] * 1000)
+            st.line_chart(df["co2_kg"] * 1000) #
         else:
             st.write("Waiting for data...")
     time.sleep(5)
