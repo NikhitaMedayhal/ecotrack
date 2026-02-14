@@ -29,3 +29,10 @@ while True:
         else:
             st.write("Waiting for data...")
     time.sleep(5)
+def generate_insight(co2):
+    if co2 > 0.05:
+        return "High usage detected. Consider reducing HD streaming."
+    elif co2 > 0.02:
+        return "Moderate usage. Good control!"
+    else:
+        return "Low impact usage. Keep it up!"
