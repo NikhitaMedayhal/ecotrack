@@ -8,7 +8,7 @@ LOG_FILE = "data/ecotrack_log.csv"
 
 def ensure_header():
     #logging data into csv
-    if not os.path.exists(LOG_FILE) or os.stat(LOG_FILE).st_size == 0: #checking if the file exists
+    if not os.path.exists(LOG_FILE) or os.stat(LOG_FILE).st_size == 0: #checking if the file exists and is not empty
         with open(LOG_FILE, "w", newline="") as f:
             writer = csv.writer(f)
             writer.writerow([
