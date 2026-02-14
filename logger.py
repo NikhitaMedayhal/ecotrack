@@ -6,9 +6,9 @@ from datetime import datetime
 
 LOG_FILE = "data/ecotrack_log.csv"
 
-# Write header only if file is empty
 def ensure_header():
-    if not os.path.exists(LOG_FILE) or os.stat(LOG_FILE).st_size == 0:
+    #logging data into csv
+    if not os.path.exists(LOG_FILE) or os.stat(LOG_FILE).st_size == 0: #checking if the file exists
         with open(LOG_FILE, "w", newline="") as f:
             writer = csv.writer(f)
             writer.writerow([
@@ -31,7 +31,7 @@ while True:
     timestamp = datetime.now().isoformat()
 
     with open(LOG_FILE, "a", newline="") as f:
-        writer = csv.writer(f)
+        writer = csv.writer(f)    #writing data into csv
         writer.writerow([
             timestamp,
             bytes_used,
@@ -40,4 +40,4 @@ while True:
             co2
         ])
 
-    print(f"{timestamp} | {co2*1000:.3f} g CO₂")
+    print(f"{timestamp} | {co2*1000:.3f} g of CO₂")
