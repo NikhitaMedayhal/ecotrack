@@ -5,36 +5,78 @@ from streamlit_autorefresh import st_autorefresh
 import json
 from pathlib import Path
 import subprocess
-import base64
+
+# ---- beep deps (only once) ----
 import io
-import math
 import wave
+import math
+import base64
+import struct
 import streamlit.components.v1 as components
 
-# -------------------- Beep -----------------------------------------
+import streamlit.components.v1 as components
+
+def browser_notify(title, body):
+    components.html(f"""
+    <script>
+    if ("Notification" in window) {{
+        if (Notification.permission === "granted") {{
+            new Notification("{title}", {{
+                body: "{body}",
+                icon: "https://cdn-icons-png.flaticon.com/512/2913/2913465.png"
+            }});
+        }} else if (Notification.permission !== "denied") {{
+            Notification.requestPermission().then(permission => {{
+                if (permission === "granted") {{
+                    new Notification("{title}", {{
+                        body: "{body}"
+                    }});
+                }}
+            }});
+        }}
+    }}
+    </script>
+    """, height=0)
+
+# ----------------- beep -----------------
 def play_beep(freq=880, duration=0.18, volume=0.4, sample_rate=44100):
-    """Plays a short beep in the browser (works best after 1 user interaction)."""
+    """Plays a short beep in the browser (best when called after a user click)."""
+
+    volume = max(0.0, min(1.0, float(volume)))
     n_samples = int(sample_rate * duration)
 
     buf = io.BytesIO()
     with wave.open(buf, "wb") as wf:
         wf.setnchannels(1)
-        wf.setsampwidth(2)  # 16-bit
+        wf.setsampwidth(2)         # 16-bit PCM
         wf.setframerate(sample_rate)
 
+        # tiny fade to avoid click/pop
+        fade = max(1, int(0.005 * sample_rate))  # 5ms
         for i in range(n_samples):
-            sample = volume * math.sin(2 * math.pi * freq * (i / sample_rate))
-            wf.writeframesraw(int(sample * 32767).to_bytes(2, byteorder="little", signed=True))
+            amp = volume
+            if i < fade:
+                amp *= i / fade
+            elif i > n_samples - fade:
+                amp *= (n_samples - i) / fade
 
-    b64 = base64.b64encode(buf.getvalue()).decode()
+            s = amp * math.sin(2 * math.pi * freq * (i / sample_rate))
+            sample_int = int(max(-1.0, min(1.0, s)) * 32767)
+            wf.writeframes(struct.pack("<h", sample_int))
+
+    b64 = base64.b64encode(buf.getvalue()).decode("ascii")
+
     components.html(
         f"""
-        <audio autoplay>
-          <source src="data:audio/wav;base64,{b64}" type="audio/wav">
-        </audio>
+        <audio id="beep" src="data:audio/wav;base64,{b64}"></audio>
+        <script>
+          const a = document.getElementById("beep");
+          a.play().catch(() => {{}});
+        </script>
         """,
         height=0,
     )
+
 
 # ---------------- Paths ----------------
 LOG_FILE = "data/ecotrack_log.csv"
@@ -129,6 +171,10 @@ st.sidebar.slider(
     step=0.5,
     key="eco_threshold"
 )
+st.sidebar.markdown("### 🔔 Notifications")
+
+if st.sidebar.button("Enable Browser Notifications"):
+    browser_notify("EcoTrack", "Notifications enabled successfully!")
 
 # ---------------- Auto refresh ----------------
 st_autorefresh(interval=5000, key="ecotrack_refresh")
@@ -207,6 +253,12 @@ if st.session_state.eco_auto_enabled:
             "EcoGuard Alert",
             f"CO₂ rate {recent_rate_g_per_min:.2f} g/min exceeded limit ({threshold:.2f})."
         )
+	
+        browser_notify(
+            "EcoGuard Alert",
+            f"CO₂ rate {recent_rate_g_per_min:.2f} g/min exceeded {threshold:.2f} g/min."
+        ) 
+
         st.session_state.notified = True
 else:
     # reset one-shot flags when safe again
