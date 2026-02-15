@@ -11,6 +11,7 @@ import math
 import wave
 import streamlit.components.v1 as components
 
+# -------------------- Beep -----------------------------------------
 def play_beep(freq=880, duration=0.18, volume=0.4, sample_rate=44100):
     """Plays a short beep in the browser (works best after 1 user interaction)."""
     n_samples = int(sample_rate * duration)
@@ -109,12 +110,12 @@ if "toasted" not in st.session_state:
     st.session_state.toasted = False
 
 # ---------------- Header ----------------
-st.title("🌍 EcoTrack - Digital Carbon Footprint Monitor")
+st.title(" EcoTrack - By Ecoders!")
 st.markdown("Real-time monitoring of your internet carbon emissions.")
 st.markdown("---")
 
 # ---------------- Sidebar controls ----------------
-st.sidebar.header("🛡️ EcoGuard Mode")
+st.sidebar.header("EcoGuard Mode")
 
 # user-controlled toggle (never write to this key in code!)
 st.sidebar.toggle("Enable EcoGuard", key="eco_user_enabled")
@@ -155,13 +156,13 @@ col3.metric("Energy Used (kWh)", round(float(latest["energy_kwh"]), 5))
 st.write("")
 
 # ---------------- Trend ----------------
-st.subheader("📈 Carbon Emission Trend")
+st.subheader("Carbon Emission Trend")
 st.line_chart(df["co2_kg"] * 1000)
 st.write("")
 
 # ---------------- Insight ----------------
 total_co2_g = float(df["co2_kg"].sum() * 1000)
-st.subheader("💡 Smart Insight")
+st.subheader("Smart Insight")
 st.success(generate_insight(total_co2_g))
 st.write("")
 
@@ -192,17 +193,18 @@ save_ecoguard(eco_enabled, threshold)
 
 # messages for auto-activation
 if st.session_state.eco_auto_enabled:
-    st.warning("⚡ EcoGuard auto-activated due to high CO₂ rate.")
+    st.warning("EcoGuard auto-activated due to high CO₂ rate.")
 
 # one-shot toast + notification while "high" (no spam)
 if st.session_state.eco_auto_enabled:
     if not st.session_state.toasted:
-        st.toast("🛡️ EcoGuard: High CO₂ rate detected! Reduce streaming/downloads.", icon="⚠️")
+        st.toast("EcoGuard: High CO₂ rate detected! Reduce streaming/downloads.", icon="⚠️")
+        play_beep()
         st.session_state.toasted = True
 
     if not st.session_state.notified:
         send_mac_notification(
-            "🛡️ EcoGuard Alert",
+            "EcoGuard Alert",
             f"CO₂ rate {recent_rate_g_per_min:.2f} g/min exceeded limit ({threshold:.2f})."
         )
         st.session_state.notified = True
@@ -214,7 +216,7 @@ else:
 # show EcoGuard warning + tips when enabled and above threshold
 if eco_enabled and recent_rate_g_per_min > threshold:
     st.error(
-        f"🛡️ EcoGuard active: CO₂ rate is above your limit "
+        f" EcoGuard active: CO₂ rate is above your limit "
         f"({recent_rate_g_per_min:.2f} g/min > {threshold:.2f} g/min)."
     )
     st.markdown("**Try this to reduce impact:**")
@@ -224,7 +226,7 @@ if eco_enabled and recent_rate_g_per_min > threshold:
 st.write("")
 
 # ---------------- Pie chart: CO₂ distribution by activity ----------------
-st.subheader("🥧 CO₂ Distribution by Activity")
+st.subheader("CO₂ Distribution by Activity")
 
 if "activity" not in df.columns:
     st.warning("No 'activity' column found. Delete old CSV, restart logger, then refresh.")
@@ -257,3 +259,9 @@ else:
         plt.tight_layout()
         st.pyplot(fig, use_container_width=True)
 
+#----------- Explainability ----------------------
+
+st.write("")
+st.markdown("---")
+st.subheader("🎬 What does this graph mean? (Simple explanation)")
+st.video("assets/streamlit.mp4")
