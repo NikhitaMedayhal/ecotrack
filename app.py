@@ -310,6 +310,21 @@ else:
 
         plt.tight_layout()
         st.pyplot(fig, use_container_width=True)
+# ---------------- Global Impact Projection ----------------
+st.write("")
+st.markdown("---")
+st.subheader("🌍 Global Impact Projection")
+
+global_users = 1_000_000  # simulate scale (1 million users)
+projected = recent_rate_g_per_min * global_users / 1000  # convert to kg per minute
+
+st.write(
+    f"If 1 million people had this usage pattern right now, "
+    f"they would emit **{projected:,.2f} kg CO₂ per minute**."
+)
+
+st.caption("Scaling individual digital habits to global climate impact.")
+
 
 #----------- Explainability ----------------------
 
