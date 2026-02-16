@@ -140,8 +140,6 @@ def ecoguard_tips(activity: str):
     ]
 
 # ---------------- Session state init ----------------
-if "eco_user_enabled" not in st.session_state:
-    st.session_state.eco_user_enabled = False
 if "eco_auto_enabled" not in st.session_state:
     st.session_state.eco_auto_enabled = False
 if "eco_threshold" not in st.session_state:
@@ -160,7 +158,6 @@ st.markdown("---")
 st.sidebar.header("EcoGuard Mode")
 
 # user-controlled toggle (never write to this key in code!)
-st.sidebar.toggle("Enable EcoGuard", key="eco_user_enabled")
 
 # threshold slider
 st.sidebar.slider(
@@ -232,7 +229,13 @@ threshold = float(st.session_state.eco_threshold)
 st.session_state.eco_auto_enabled = recent_rate_g_per_min > threshold
 
 # final enabled state = user toggle OR auto trigger
-eco_enabled = bool(st.session_state.eco_user_enabled or st.session_state.eco_auto_enabled)
+eco_enabled = st.session_state.eco_auto_enabled
+
+# show system activation clearly
+if eco_enabled:
+    st.sidebar.success("🟢 EcoGuard ACTIVE")
+else:
+    st.sidebar.info("🟡 Monitoring Mode")
 
 # write to file for external components (logger/helper)
 save_ecoguard(eco_enabled, threshold)
